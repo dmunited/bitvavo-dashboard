@@ -1,7 +1,4 @@
 [build]
-  base = "project"
+  base = ""
   publish = "project/.next"
-  command = "npm run build"
-
-[functions]
-  directory = ""
+  command = "cd project && npm install && npm run build"
