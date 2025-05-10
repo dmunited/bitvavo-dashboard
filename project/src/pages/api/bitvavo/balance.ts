@@ -1,77 +1,48 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-// Type definitions for Bitvavo client and balance data
-interface BitvavoBalance {
-  symbol: string;
-  available: string;
-  inOrder: string;
-}
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  // Only allow GET requests
+  if (req.method !== 'GET') {
+    res.setHeader('Allow', 'GET');
+    return res.status(405).json({ error: `Method ${req.method} not allowed` });
+  }
 
-interface BitvavoClient {
-  options: (config: {
-    APIKEY: string;
-    APISECRET: string;
-    RESTURL: string;
-    ACCESSWINDOW: number;
-  }) => BitvavoClient;
-  balance: (options: Record<string, never>) => Promise<BitvavoBalance[]>;
-}
+  // Ensure API credentials are provided
+  const { BITVAVO_API_KEY, BITVAVO_API_SECRET } = process.env;
+  if (!BITVAVO_API_KEY || !BITVAVO_API_SECRET) {
+    console.error('Bitvavo credentials not provided');
+    return res.status(500).json({ error: 'Bitvavo credentials not provided' });
+  }
 
-// Retry configuration
-const MAX_RETRIES = 3;
-const INITIAL_RETRY_DELAY = 1000; // 1 second
-
-async function sleep(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-async function fetchBalanceWithRetry(bitvavoClient: BitvavoClient, retryCount = 0): Promise<BitvavoBalance[]> {
   try {
-    return await bitvavoClient.balance({});
-  } catch (error) {
-    if (retryCount >= MAX_RETRIES) {
-      throw error;
+    // Dynamically import the Bitvavo client
+    const Bitvavo = (await import('bitvavo')).default;
+    const bitvavoClient = Bitvavo().options({
+      APIKEY: BITVAVO_API_KEY,
+      APISECRET: BITVAVO_API_SECRET,
+      ACCESSWINDOW: 10000,
+      RESTURL: 'https://api.bitvavo.com/v2',
+      WSURL: 'wss://ws.bitvavo.com/v2/'
+    });
+
+    // Attempt to retrieve balance with retry logic
+    let balanceData;
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        balanceData = await bitvavoClient.balance({});
+        break; // exit loop on success
+      } catch (err) {
+        console.warn(`Bitvavo balance fetch attempt ${attempt} failed`, err);
+        if (attempt === 3) {
+          throw err; // rethrow after final attempt
+        }
+      }
     }
 
-    // Calculate exponential backoff delay
-    const delay = INITIAL_RETRY_DELAY * Math.pow(2, retryCount);
-    console.log(`[INFO] Retry attempt ${retryCount + 1}/${MAX_RETRIES} after ${delay}ms`);
-    
-    await sleep(delay);
-    return fetchBalanceWithRetry(bitvavoClient, retryCount + 1);
-  }
-}
-
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  // Read API credentials from env
-  const apiKey = process.env.BITVAVO_API_KEY;
-  const apiSecret = process.env.BITVAVO_API_SECRET;
-  const apiUrl = process.env.BITVAVO_API_URL || 'https://api.bitvavo.com/v2';
-
-  // Check if API credentials are present
-  if (!apiKey || !apiSecret) {
-    console.error('[ERROR] Bitvavo API credentials missing. Check your .env settings.');
-    return res.status(500).json({ error: 'API credentials not configured. Please check your .env file.' });
-  }
-
-  try {
-    // Initialize Bitvavo client with API key and secret using dynamic import
-    // @ts-expect-error: bitvavo has no types
-   const bitvavoClient = (await import('bitvavo')).default().options({
-      APIKEY: apiKey,
-      APISECRET: apiSecret,
-      RESTURL: apiUrl,
-      ACCESSWINDOW: 10000,
-    });
-
-    // Fetch balance data with retry mechanism
-    const balanceData = await fetchBalanceWithRetry(bitvavoClient);
+    // Return the retrieved balance data
     return res.status(200).json(balanceData);
-  } catch (err) {
-    console.error('[ERROR] Error fetching balance:', err);
-    return res.status(500).json({ 
-      error: 'Error fetching balance data',
-      details: err instanceof Error ? err.message : 'Unknown error'
-    });
+  } catch (error: any) {
+    console.error('Error fetching Bitvavo balance:', error);
+    return res.status(500).json({ error: error?.message || 'Failed to fetch Bitvavo balance' });
   }
 }
