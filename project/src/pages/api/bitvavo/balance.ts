@@ -1,4 +1,4 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
+kkimport type { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // Only allow GET requests
@@ -30,19 +30,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     for (let attempt = 1; attempt <= 3; attempt++) {
       try {
         balanceData = await bitvavoClient.balance({});
-        break; // exit loop on success
+        break;
       } catch (err) {
         console.warn(`Bitvavo balance fetch attempt ${attempt} failed`, err);
         if (attempt === 3) {
-          throw err; // rethrow after final attempt
+          throw err;
         }
       }
     }
 
-    // Return the retrieved balance data
     return res.status(200).json(balanceData);
-  } catch (error: any) {
-    console.error('Error fetching Bitvavo balance:', error);
-    return res.status(500).json({ error: error?.message || 'Failed to fetch Bitvavo balance' });
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error('Error fetching Bitvavo balance:', error.message);
+      return res.status(500).json({ error: error.message });
+    } else {
+      console.error('Unknown error:', error);
+      return res.status(500).json({ error: 'Onbekende fout opgetreden bij ophalen van balans.' });
+    }
   }
 }
+
