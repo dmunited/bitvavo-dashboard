@@ -56,7 +56,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     // Initialize Bitvavo client with API key and secret using dynamic import
-    const bitvavoClient = (await import('bitvavo')).default().options({
+    // @ts-expect-error: bitvavo has no types
+   const bitvavoClient = (await import('bitvavo')).default().options({
       APIKEY: apiKey,
       APISECRET: apiSecret,
       RESTURL: apiUrl,
