@@ -1,4 +1,4 @@
 [build]
-  base = ""
-  publish = "project/.next"
-  command = "cd project && npm install && npm run build"
+  base = "project"
+  publish = ".next"
+  command = "npm install && npm run build"
