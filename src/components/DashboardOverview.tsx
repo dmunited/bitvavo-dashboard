@@ -16,6 +16,7 @@ interface DashboardProps {
   coins: CoinBalance[];
   onRefresh?: () => void;
 }
+
 export const DashboardOverview: FC<DashboardProps> = ({
   totalValue,
   change24h,
