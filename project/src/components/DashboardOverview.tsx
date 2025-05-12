@@ -32,33 +32,33 @@ export default function DashboardOverview({
       <div className="bg-[#2B2F36] rounded-lg p-6 shadow-md">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-gray-300 text-lg">Portfolio Value</h2>
-          <span className="text-green-500">↗</span>
+          <span className="text-green-500 text-sm">↗</span>
         </div>
         <div className="text-3xl font-bold text-green-500 mb-2">
           €{totalValue.toFixed(2)}
-       </div>
+        </div>
         <div className="text-sm text-gray-400">
           24h change: {change24h.toFixed(2)}%
         </div>
-        <div className="text-gray-400 text-sm">
+        <div className="text-sm text-gray-400">
           {assetCount} assets
-        </div> 
+        </div>
       </div>
 
       {/* EUR Balance */}
       <div className="bg-[#2B2F36] rounded-lg p-6 shadow-md">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-gray-300 text-lg">EUR Balance</h2>
-          <RefreshCcw 
-            className="text-gray-400 cursor-pointer hover:text-gray-300" 
-            size={18} 
-            onClick={onRefresh} 
+          <RefreshCcw
+            className="text-gray-400 cursor-pointer hover:text-gray-300"
+            size={18}
+            onClick={onRefresh}
           />
         </div>
         <div className="text-3xl font-bold text-blue-500 mb-2">
           €{eurBalance.toFixed(2)}
         </div>
-        <div className="text-gray-400 text-sm">
+        <div className="text-sm text-gray-400">
           In orders: €{eurInOrders.toFixed(2)}
         </div>
       </div>
@@ -69,10 +69,15 @@ export default function DashboardOverview({
           <h2 className="text-gray-300 text-lg mb-4">All Balances</h2>
           <div className="grid gap-3">
             {coins.map((coin) => (
-              <div key={coin.symbol} className="flex justify-between border-b border-gray-700 pb-2 text-gray-300">
+              <div
+                key={coin.symbol}
+                className="flex justify-between border-b border-gray-700 pb-2 text-gray-300"
+              >
                 <div>{coin.symbol}</div>
                 <div className="text-right">
-                  <div>{coin.available.toFixed(8)} ({coin.totalEurValue.toFixed(2)} €)</div>
+                  <div>
+                    {coin.available.toFixed(8)} ({coin.totalEurValue.toFixed(2)} €)
+                  </div>
                   {coin.inOrders > 0 && (
                     <div className="text-sm text-gray-400">
                       In orders: {coin.inOrders.toFixed(8)}
