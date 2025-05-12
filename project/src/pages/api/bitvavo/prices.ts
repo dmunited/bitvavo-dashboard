@@ -25,7 +25,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const markets = await response.json();
 
     // Simpele filter op EUR-markten
-    const eurMarkets = markets.filter((m: any) => m.quote === 'EUR');
+
+    type Market = { market: string; quote: string };
+    const eurMarkets = (markets as Market[]).filter((m) => m.quote === 'EUR');
     const prices: PriceResponse[] = [];
 
     for (const market of eurMarkets.slice(0, 10)) {

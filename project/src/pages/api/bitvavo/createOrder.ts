@@ -34,12 +34,32 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       ACCESSWINDOW: 10000,
     });
 
-    const orderPayload: any = {
-      market,
-      side,
-      amount,
-      ...(orderType === 'limit' ? { price, orderType: 'limit' } : { orderType: 'market' })
-    };
+nterface OrderPayload {
+  market: string;
+  side: 'buy' | 'sell';
+  amount: string;
+  price?: string;
+  orderType: 'limit' | 'market';
+}
+
+let orderPayload: OrderPayload;
+
+if (orderType === 'limit') {
+  orderPayload = {
+    market,
+    side,
+    amount,
+    price,
+    orderType: 'limit'
+  };
+} else {
+  orderPayload = {
+    market,
+    side,
+    amount,
+    orderType: 'market'
+  };
+}
 
     const result = await bitvavo.placeOrder(orderPayload);
     return res.status(200).json(result);
