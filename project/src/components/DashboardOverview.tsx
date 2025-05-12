@@ -36,8 +36,10 @@ export default function DashboardOverview({
         </div>
         <div className="text-3xl font-bold text-green-500 mb-2">
           €{totalValue.toFixed(2)}
+       </div>
         <div className="text-sm text-gray-400">
   24h change: {change24h.toFixed(2)}%
+        </div>
           <div className="text-gray-400 text-sm">
           {assetCount} assets
         </div>
