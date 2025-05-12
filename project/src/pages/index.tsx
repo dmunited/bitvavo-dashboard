@@ -1,8 +1,7 @@
-// @ts-expect-error dynamic is a reserved export used by Netlify for SSR
-export const dynamic = 'force-dynamic';
+// src/pages/index.tsx
+import { dynamic } from './force-dynamic'; // haal 'force-dynamic' binnen
+import dynamicImport from 'next/dynamic';
 
-import dynamic from 'next/dynamic';
-
-const Home = dynamic(() => import('../components/index.client'), { ssr: false });
+const Home = dynamicImport(() => import('../components/index.client'), { ssr: false });
 
 export default Home;
