@@ -42,7 +42,7 @@ export default function DashboardOverview({
         </div>
           <div className="text-gray-400 text-sm">
           {assetCount} assets
-        </div>
+        </div> 
       </div>
       {/* EUR Balance */}
       <div className="bg-[#2B2F36] rounded-lg p-6 shadow-md">
