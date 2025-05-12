@@ -67,19 +67,19 @@ export default function DashboardOverview({
       {coins.length > 0 && (
         <div className="md:col-span-2 bg-[#2B2F36] rounded-lg p-6 shadow-md">
           <h2 className="text-gray-300 text-lg mb-4">All Balances</h2>
-          <div className="grid gap-3">
+          <div className="grid gap-4">
             {coins.map((coin) => (
               <div
                 key={coin.symbol}
-                className="flex justify-between border-b border-gray-700 pb-2 text-gray-300"
+                className="flex justify-between items-center border-b border-gray-700 pb-2 text-gray-300"
               >
-                <div>{coin.symbol}</div>
+                <div className="font-semibold">{coin.symbol}</div>
                 <div className="text-right">
-                  <div>
-                    {coin.available.toFixed(8)} ({coin.totalEurValue.toFixed(2)} €)
+                  <div className="text-sm">
+                    {coin.available.toFixed(8)} <span className="text-gray-500">({coin.totalEurValue.toFixed(2)} €)</span>
                   </div>
                   {coin.inOrders > 0 && (
-                    <div className="text-sm text-gray-400">
+                    <div className="text-xs text-gray-400">
                       In orders: {coin.inOrders.toFixed(8)}
                     </div>
                   )}
