@@ -57,7 +57,8 @@ export default function Home() {
 
         const priceMap = prices.reduce((acc, price) => {
           if (price.market.endsWith('-EUR')) {
-            const symbol = price.market.replace('-EUR', '');
+            const symbol = price.market.replace('-
+                                                EUR', '');
             acc[symbol] = parseFloat(price.price);
           }
           return acc;
