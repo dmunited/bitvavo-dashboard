@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "bitvavo": "^1.4.1",
-    "lucide-react": "^0.287.0",
+    "lucide-react": "^0.263.0",        // ✅ Compatibel met React 18
     "next": "15.3.2",
     "next-auth": "^4.24.11",
     "react": "18.2.0",
