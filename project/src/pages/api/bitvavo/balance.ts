@@ -1,13 +1,21 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '../auth/[...nextauth]';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  // Only allow GET requests
+  // ✅ 1. Sessiecontrole — alleen ingelogde gebruikers mogen door
+  const session = await getServerSession(req, res, authOptions);
+  if (!session) {
+    return res.status(401).json({ error: 'Niet geautoriseerd (sessie ontbreekt)' });
+  }
+
+  // ✅ 2. Alleen GET-requests toestaan
   if (req.method !== 'GET') {
     res.setHeader('Allow', 'GET');
     return res.status(405).json({ error: `Method ${req.method} not allowed` });
   }
 
-  // Ensure API credentials are provided
+  // ✅ 3. API-credentials controleren
   const { BITVAVO_API_KEY, BITVAVO_API_SECRET } = process.env;
   if (!BITVAVO_API_KEY || !BITVAVO_API_SECRET) {
     console.error('Bitvavo credentials not provided');
@@ -15,7 +23,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // Dynamically import the Bitvavo client
+    // ✅ 4. Dynamische import van Bitvavo SDK
     const Bitvavo = (await import('bitvavo')).default;
     const bitvavoClient = Bitvavo().options({
       APIKEY: BITVAVO_API_KEY,
@@ -25,7 +33,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       WSURL: 'wss://ws.bitvavo.com/v2/'
     });
 
-    // Attempt to retrieve balance with retry logic
+    // ✅ 5. Retry-mechanisme bij ophalen balans
     let balanceData;
     for (let attempt = 1; attempt <= 3; attempt++) {
       try {
@@ -39,7 +47,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     }
 
+    // ✅ 6. Succesvol antwoord
     return res.status(200).json(balanceData);
+
   } catch (error: unknown) {
     if (error instanceof Error) {
       console.error('Error fetching Bitvavo balance:', error.message);
@@ -50,4 +60,3 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
   }
 }
-
