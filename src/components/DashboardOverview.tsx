@@ -1,141 +1,126 @@
 import React from "react";
 
-// Component 1: Portfolio Value Card
-function PortfolioValueCard({ totalValue, change24h, assetCount }) {
-  // Format numbers: ensure two decimals for currency and percentage
-  const formattedTotal = `€${totalValue.toFixed(2)}`;
-  const formattedChange = `${change24h >= 0 ? '+' : ''}${change24h.toFixed(2)}%`;
+interface PortfolioCardProps {
+  totalValue: number;
+  assetCount: number;
+  change24h: number;
+}
+
+interface EurBalanceCardProps {
+  balance: number;
+  inOrders: number;
+  onRefresh: () => void;
+}
+
+interface TopCoinCardProps {
+  symbol: string;
+  amount: number;
+  inOrders: number;
+  eurValue: number;
+}
+
+function PortfolioCard({ totalValue, assetCount, change24h }: PortfolioCardProps) {
   return (
-    <div className="bg-slate-800 rounded-lg p-4 shadow">
-      {/* Card Header: Title and trend icon */}
-      <div className="flex justify-between items-start">
-        <h2 className="text-slate-200 font-semibold">Portfolio Waarde</h2>
-        {/* Trend indicator icon, green if positive or zero, red if negative */}
-        <span className={`text-xl ${change24h >= 0 ? 'text-green-400' : 'text-red-500'}`}>
-          {change24h >= 0 ? '↗️' : '↘️'}
+    <div className="bg-[#2B2F36] rounded-lg p-6 shadow-lg">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-gray-300 text-lg font-medium">Portfolio Value</h2>
+        <span className={`text-xl ${change24h >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+          {change24h >= 0 ? '↗' : '↘'}
         </span>
       </div>
-      {/* Main Value */}
-      <p className="mt-1 text-2xl font-bold text-green-400">{formattedTotal}</p>
-      {/* Subtext: asset count and 24h change */}
-      <p className="text-sm text-slate-400">
-        {assetCount} {assetCount === 1 ? 'asset' : 'assets'}, {formattedChange} laatste 24u
-      </p>
+      <div className="text-3xl font-bold text-green-500 mb-2">
+        €{totalValue.toFixed(2)}
+      </div>
+      <div className="text-gray-400 text-sm">
+        {assetCount} {assetCount === 1 ? 'asset' : 'assets'}
+      </div>
     </div>
   );
 }
 
-// Component 2: EUR Balance Card
-function EurBalanceCard({ eurBalance, eurInOrders, onRefresh }) {
-  // Format balances to two decimals
-  const formattedBalance = `€${eurBalance.toFixed(2)}`;
-  const formattedInOrders = `€${eurInOrders.toFixed(2)}`;
+function EurBalanceCard({ balance, inOrders, onRefresh }: EurBalanceCardProps) {
   return (
-    <div className="bg-slate-800 rounded-lg p-4 shadow">
-      {/* Card Header: Title and refresh button */}
-      <div className="flex justify-between items-start">
-        <h2 className="text-slate-200 font-semibold">EUR Saldo</h2>
+    <div className="bg-[#2B2F36] rounded-lg p-6 shadow-lg">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-gray-300 text-lg font-medium">EUR Balance</h2>
         <button 
-          type="button" 
-          onClick={onRefresh} 
-          className="text-slate-400 hover:text-slate-200"
+          onClick={onRefresh}
+          className="text-gray-400 hover:text-gray-300 transition-colors"
           aria-label="Refresh balance"
         >
           ↻
         </button>
       </div>
-      {/* Main EUR balance */}
-      <p className="mt-1 text-2xl font-bold text-indigo-500">{formattedBalance}</p>
-      {/* Subtext: in orders balance */}
-      <p className="text-sm text-indigo-500/75">In orders: {formattedInOrders}</p>
+      <div className="text-3xl font-bold text-blue-500 mb-2">
+        €{balance.toFixed(2)}
+      </div>
+      <div className="text-gray-400 text-sm">
+        In orders: €{inOrders.toFixed(2)}
+      </div>
     </div>
   );
 }
 
-// Subcomponent: single coin row
-function CoinBalanceRow({ symbol, available, inOrders, totalEurValue }) {
-  // Format numbers (coins could have varying decimals, here we use up to 8 for crypto, and 2 for EUR)
-  const formattedAvailable = `${available}${symbol}`;  // e.g. "0.500BTC"
-  const formattedInOrders = `${inOrders}${symbol}`;    // e.g. "0.100BTC"
-  const formattedTotalEur = `€${totalEurValue.toFixed(2)}`;
+function TopCoinCard({ symbol, amount, inOrders, eurValue }: TopCoinCardProps) {
   return (
-    <li className="py-2 flex flex-col">
-      {/* Top line: coin symbol and total EUR value */}
-      <div className="flex justify-between">
-        <span className="font-medium text-slate-200">{symbol}</span>
-        <span className="font-medium text-slate-200">{formattedTotalEur}</span>
+    <div className="bg-[#2B2F36] rounded-lg p-6 shadow-lg">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-gray-300 text-lg font-medium">{symbol}</h2>
+        <span className="text-gray-400">📈</span>
       </div>
-      {/* Second line: available and in-orders amounts (if any) */}
-      <div className="flex justify-between text-xs text-slate-400 mt-0.5">
-        <span>{available.toFixed(8)} {symbol} beschikbaar</span>
-        {inOrders > 0 ? (
-          <span>{inOrders.toFixed(8)} {symbol} in orders</span>
-        ) : (
-          <span />  /* empty span to preserve structure if needed */
+      <div className="text-3xl font-bold text-purple-500 mb-2">
+        {amount.toFixed(8)} {symbol}
+      </div>
+      <div className="text-gray-400 text-sm flex justify-between items-center">
+        <span>€{eurValue.toFixed(2)}</span>
+        {inOrders > 0 && (
+          <span>In orders: {inOrders.toFixed(8)} {symbol}</span>
         )}
       </div>
-    </li>
-  );
-}
-
-// Component 3: Coin Balances Grid
-function CoinBalancesGrid({ coins }) {
-  return (
-    <div className="bg-slate-800 rounded-lg p-4 shadow">
-      {/* We can include a heading here if desired:
-      <h2 className="text-slate-200 font-semibold mb-2">Coin Balances</h2> 
-      */}
-      {coins.length > 0 ? (
-        <ul className="divide-y divide-gray-700">
-          {coins.map((coin) => (
-            <CoinBalanceRow key={coin.symbol}
-              symbol={coin.symbol}
-              available={coin.available}
-              inOrders={coin.inOrders}
-              totalEurValue={coin.totalEurValue}
-            />
-          ))}
-        </ul>
-      ) : (
-        <p className="text-center text-slate-400">Geen assets om weer te geven</p>
-      )}
     </div>
   );
 }
 
-// Example usage of the components in a Dashboard page/component
 export default function DashboardOverview() {
-  // Dummy data ter demonstratie; in de echte app komen deze waarden dynamisch uit API/props
-  const dummyPortfolioValue = 23000.00;
-  const dummyChange24h = 2.50;
-  const dummyAssetsCount = 2;
-  const dummyEurBalance = 1500.00;
-  const dummyEurInOrders = 200.00;
-  const dummyCoins = [
-    { symbol: "BTC", available: 0.50000000, inOrders: 0.10000000, totalEurValue: 20000.00 },
-    { symbol: "ETH", available: 2.00000000, inOrders: 0.00000000, totalEurValue: 3000.00 }
-  ];
+  // Example data - will be replaced with real data later
+  const mockData = {
+    portfolio: {
+      totalValue: 0.00,
+      assetCount: 0,
+      change24h: 0,
+    },
+    eurBalance: {
+      balance: 0.00,
+      inOrders: 0.00,
+    },
+    topCoin: {
+      symbol: "BTC",
+      amount: 0,
+      inOrders: 0,
+      eurValue: 0.00,
+    },
+  };
 
   return (
-    <div className="px-4 py-4 space-y-4">
-      {/* Top section: two cards side by side on md+, stacked on mobile */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <PortfolioValueCard 
-          totalValue={dummyPortfolioValue} 
-          change24h={dummyChange24h} 
-          assetCount={dummyAssetsCount} 
+    <div className="max-w-7xl mx-auto p-4 space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <PortfolioCard 
+          totalValue={mockData.portfolio.totalValue}
+          assetCount={mockData.portfolio.assetCount}
+          change24h={mockData.portfolio.change24h}
         />
         <EurBalanceCard 
-          eurBalance={dummyEurBalance} 
-          eurInOrders={dummyEurInOrders} 
-          onRefresh={() => {
-            // Hier zou de logica komen om balans te verversen, bv. refetch van API
-            console.log("Refresh EUR balance");
-          }} 
+          balance={mockData.eurBalance.balance}
+          inOrders={mockData.eurBalance.inOrders}
+          onRefresh={() => console.log('Refreshing balance...')}
+        />
+        <TopCoinCard 
+          symbol={mockData.topCoin.symbol}
+          amount={mockData.topCoin.amount}
+          inOrders={mockData.topCoin.inOrders}
+          eurValue={mockData.topCoin.eurValue}
         />
       </div>
-      {/* Bottom section: coin balances list */}
-      <CoinBalancesGrid coins={dummyCoins} />
     </div>
   );
 }

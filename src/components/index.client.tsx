@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSession, signIn, signOut } from "next-auth/react";
-import { DashboardOverview } from "./DashboardOverview";
+import DashboardOverview from "./DashboardOverview";
 
 interface BitvavoBalance {
   symbol: string;
@@ -31,71 +31,67 @@ export default function Home() {
   const [prices, setPrices] = useState<Record<string, number>>({});
   const [error, setError] = useState<string | null>(null);
   const [isRetrying, setIsRetrying] = useState(false);
-  const [change24h, setChange24h] = useState(0);
-
-  const fetchBalanceAndPrices = async () => {
-    try {
-      setError(null);
-      setIsRetrying(false);
-
-      const [balanceRes, pricesRes] = await Promise.all([
-        fetch("/api/bitvavo/balance"),
-        fetch("/api/bitvavo/prices")
-      ]);
-
-      if (!balanceRes.ok || !pricesRes.ok) {
-        throw new Error(`HTTP error! status: ${!balanceRes.ok ? balanceRes.status : pricesRes.status}`);
-      }
-
-      const balances: BitvavoBalance[] = await balanceRes.json();
-      const prices: BitvavoPrice[] = await pricesRes.json();
-
-      if (!Array.isArray(balances)) {
-        throw new Error("Invalid response format from API");
-      }
-
-      const priceMap = prices.reduce((acc, price) => {
-        if (price.market.endsWith('-EUR')) {
-          const symbol = price.market.replace('-EUR', '');
-          acc[symbol] = parseFloat(price.price);
-        }
-        return acc;
-      }, {} as Record<string, number>);
-
-      setPrices(priceMap);
-
-      const eurBalance = balances.find(b => b.symbol === "EUR");
-      const eurAvailable = parseFloat(eurBalance?.available || "0");
-      const eurInOrder = parseFloat(eurBalance?.inOrder || "0");
-
-      const cryptoValue = balances
-        .filter(b => b.symbol !== "EUR")
-        .reduce((acc, balance) => {
-          const price = priceMap[balance.symbol] || 0;
-          const total = (parseFloat(balance.available) + parseFloat(balance.inOrder)) * price;
-          return acc + total;
-        }, 0);
-
-      const totalValue = cryptoValue + eurAvailable + eurInOrder;
-
-      setPortfolio({
-        totalValue,
-        eurBalance: eurAvailable,
-        inOrders: eurInOrder,
-        balances: balances.filter(b => b.symbol !== "EUR")
-      });
-
-      // Mock 24h change for demo purposes
-      setChange24h(Math.random() * 10 - 5); // Random value between -5 and 5
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      setError(message);
-      setIsRetrying(true);
-    }
-  };
 
   useEffect(() => {
     if (status !== "authenticated") return;
+
+    async function fetchBalanceAndPrices() {
+      try {
+        setError(null);
+        setIsRetrying(false);
+
+        const [balanceRes, pricesRes] = await Promise.all([
+          fetch("/api/bitvavo/balance"),
+          fetch("/api/bitvavo/prices")
+        ]);
+
+        if (!balanceRes.ok || !pricesRes.ok) {
+          throw new Error(`HTTP error! status: ${!balanceRes.ok ? balanceRes.status : pricesRes.status}`);
+        }
+
+        const balances: BitvavoBalance[] = await balanceRes.json();
+        const prices: BitvavoPrice[] = await pricesRes.json();
+
+        if (!Array.isArray(balances)) {
+          throw new Error("Invalid response format from API");
+        }
+
+        const priceMap = prices.reduce((acc, price) => {
+          if (price.market.endsWith('-EUR')) {
+            const symbol = price.market.replace('-EUR', '');
+            acc[symbol] = parseFloat(price.price);
+          }
+          return acc;
+        }, {} as Record<string, number>);
+
+        setPrices(priceMap);
+
+        const eurBalance = balances.find(b => b.symbol === "EUR");
+        const eurAvailable = parseFloat(eurBalance?.available || "0");
+        const eurInOrder = parseFloat(eurBalance?.inOrder || "0");
+
+        const cryptoValue = balances
+          .filter(b => b.symbol !== "EUR")
+          .reduce((acc, balance) => {
+            const price = priceMap[balance.symbol] || 0;
+            const total = (parseFloat(balance.available) + parseFloat(balance.inOrder)) * price;
+            return acc + total;
+          }, 0);
+
+        const totalValue = cryptoValue + eurAvailable + eurInOrder;
+
+        setPortfolio({
+          totalValue,
+          eurBalance: eurAvailable,
+          inOrders: eurInOrder,
+          balances: balances.filter(b => b.symbol !== "EUR")
+        });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        setError(message);
+        setIsRetrying(true);
+      }
+    }
 
     fetchBalanceAndPrices();
     const interval = setInterval(fetchBalanceAndPrices, 60000);
@@ -125,16 +121,9 @@ export default function Home() {
     );
   }
 
-  const coins = portfolio.balances.map(balance => ({
-    symbol: balance.symbol,
-    available: parseFloat(balance.available),
-    inOrders: parseFloat(balance.inOrder),
-    totalEurValue: (parseFloat(balance.available) + parseFloat(balance.inOrder)) * (prices[balance.symbol] || 0)
-  }));
-
   return (
     <main className="min-h-screen bg-[#1E2026] p-8">
-      <div className="max-w-4xl mx-auto mb-6 flex justify-between items-center">
+      <div className="max-w-7xl mx-auto mb-6 flex justify-between items-center">
         <span className="text-gray-300">
           Signed in as <strong>{session.user?.name || session.user?.email}</strong>
         </span>
@@ -147,7 +136,7 @@ export default function Home() {
       </div>
 
       {error && (
-        <div className="max-w-4xl mx-auto mb-6 bg-red-500/10 border border-red-500 text-red-500 p-4 rounded-lg">
+        <div className="max-w-7xl mx-auto mb-6 bg-red-500/10 border border-red-500 text-red-500 p-4 rounded-lg">
           <p className="font-semibold">Error loading balance:</p>
           <p>{error}</p>
           {isRetrying && (
@@ -158,15 +147,7 @@ export default function Home() {
         </div>
       )}
 
-      <DashboardOverview
-        totalValue={portfolio.totalValue}
-        change24h={change24h}
-        assetCount={portfolio.balances.length}
-        eurBalance={portfolio.eurBalance}
-        eurInOrders={portfolio.inOrders}
-        coins={coins}
-        onRefresh={fetchBalanceAndPrices}
-      />
+      <DashboardOverview />
     </main>
   );
 }
