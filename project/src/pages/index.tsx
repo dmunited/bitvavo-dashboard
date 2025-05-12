@@ -29,7 +29,6 @@ export default function Home() {
   });
   const [prices, setPrices] = useState<Record<string, number>>({});
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
   const [isRetrying, setIsRetrying] = useState(false);
 
   useEffect(() => {
@@ -37,7 +36,6 @@ export default function Home() {
 
     async function fetchBalanceAndPrices() {
       try {
-        setLoading(true);
         setError(null);
         setIsRetrying(false);
 
@@ -91,8 +89,6 @@ export default function Home() {
         const message = error instanceof Error ? error.message : String(error);
         setError(message);
         setIsRetrying(true);
-      } finally {
-        setLoading(false);
       }
     }
 
