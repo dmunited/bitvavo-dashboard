@@ -11,10 +11,11 @@
   },
   "dependencies": {
     "bitvavo": "^1.4.1",
+    "lucide-react": "^0.263.0",        // ✅ Compatibel met React 18
     "next": "15.3.2",
     "next-auth": "^4.24.11",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
@@ -22,8 +23,8 @@
     "@netlify/plugin-nextjs": "^5.11.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
     "eslint": "^9",
     "eslint-config-next": "15.3.2",
     "tailwindcss": "^4",
