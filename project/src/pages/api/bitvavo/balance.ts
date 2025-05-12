@@ -17,6 +17,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   // ✅ 3. API-credentials controleren
   const { BITVAVO_API_KEY, BITVAVO_API_SECRET } = process.env;
+  console.log('BITVAVO_API_KEY:', process.env.BITVAVO_API_KEY);
+console.log('BITVAVO_API_SECRET:', process.env.BITVAVO_API_SECRET);
+
   if (!BITVAVO_API_KEY || !BITVAVO_API_SECRET) {
     console.error('Bitvavo credentials not provided');
     return res.status(500).json({ error: 'Bitvavo credentials not provided' });
