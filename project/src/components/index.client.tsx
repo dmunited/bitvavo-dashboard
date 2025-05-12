@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSession, signIn, signOut } from "next-auth/react";
 
-<h1>Hoi</h1>
 
 interface BitvavoBalance {
   symbol: string;
