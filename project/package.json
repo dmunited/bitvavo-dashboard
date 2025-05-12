@@ -13,7 +13,7 @@
   "react": "18.2.0",
   "react-dom": "18.2.0",
   "next": "15.3.2",
-  "lucide-react": "^0.263.0",
+  "lucide-react": "^0.510.0",
   "next-auth": "^4.24.11",
   "bitvavo": "^1.4.1"
 },
