@@ -1,5 +1,7 @@
 // @ts-ignore
-export const dynamic = 'force-dynamic'; // for Netlify SSR
+export const dynamic = 'force-dynamic'; 
+
+// for Netlify SSR
 
 import dynamic from 'next/dynamic';
 
