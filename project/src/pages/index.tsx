@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useSession, signIn, signOut } from "next-auth/react";
 
 interface BitvavoBalance {
   symbol: string;
@@ -19,6 +20,7 @@ interface PortfolioData {
 }
 
 export default function Home() {
+  const { data: session, status } = useSession();
   const [portfolio, setPortfolio] = useState<PortfolioData>({
     totalValue: 0,
     eurBalance: 0,
@@ -31,30 +33,30 @@ export default function Home() {
   const [isRetrying, setIsRetrying] = useState(false);
 
   useEffect(() => {
+    if (status !== "authenticated") return;
+
     async function fetchBalanceAndPrices() {
       try {
         setLoading(true);
         setError(null);
         setIsRetrying(false);
-        
-        // Fetch balances and prices in parallel
+
         const [balanceRes, pricesRes] = await Promise.all([
           fetch("/api/bitvavo/balance"),
           fetch("/api/bitvavo/prices")
         ]);
-        
+
         if (!balanceRes.ok || !pricesRes.ok) {
           throw new Error(`HTTP error! status: ${!balanceRes.ok ? balanceRes.status : pricesRes.status}`);
         }
-        
+
         const balances: BitvavoBalance[] = await balanceRes.json();
         const prices: BitvavoPrice[] = await pricesRes.json();
-        
+
         if (!Array.isArray(balances)) {
           throw new Error("Invalid response format from API");
         }
 
-        // Create a price lookup map for EUR pairs
         const priceMap = prices.reduce((acc, price) => {
           if (price.market.endsWith('-EUR')) {
             const symbol = price.market.replace('-EUR', '');
@@ -65,12 +67,10 @@ export default function Home() {
 
         setPrices(priceMap);
 
-        // Find EUR balance
         const eurBalance = balances.find(b => b.symbol === "EUR");
         const eurAvailable = parseFloat(eurBalance?.available || "0");
         const eurInOrder = parseFloat(eurBalance?.inOrder || "0");
 
-        // Calculate total value in EUR
         const cryptoValue = balances
           .filter(b => b.symbol !== "EUR")
           .reduce((acc, balance) => {
@@ -80,12 +80,12 @@ export default function Home() {
           }, 0);
 
         const totalValue = cryptoValue + eurAvailable + eurInOrder;
-        
+
         setPortfolio({
           totalValue,
           eurBalance: eurAvailable,
           inOrders: eurInOrder,
-          balances: balances.filter(b => b.symbol !== "EUR") // Remove EUR from balances list
+          balances: balances.filter(b => b.symbol !== "EUR")
         });
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
@@ -99,18 +99,43 @@ export default function Home() {
     fetchBalanceAndPrices();
     const interval = setInterval(fetchBalanceAndPrices, 60000);
     return () => clearInterval(interval);
-  }, []);
+  }, [status]);
 
-  if (loading) {
+  if (status === "loading") {
     return (
       <main className="min-h-screen bg-[#1E2026] p-8 flex items-center justify-center">
-        <div className="text-gray-300">Loading balance data...</div>
+        <div className="text-gray-300">Sessie laden...</div>
+      </main>
+    );
+  }
+
+  if (!session) {
+    return (
+      <main className="min-h-screen bg-[#1E2026] p-8 flex flex-col items-center justify-center text-center">
+        <h1 className="text-3xl text-white mb-4">Welkom bij het Bitvavo Dashboard 🚀</h1>
+        <p className="text-gray-400 mb-6">Log in met GitHub om je balans te bekijken.</p>
+        <button
+          onClick={() => signIn("github")}
+          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+        >
+          Inloggen met GitHub
+        </button>
       </main>
     );
   }
 
   return (
     <main className="min-h-screen bg-[#1E2026] p-8">
+      <div className="mb-6 text-gray-300">
+        Ingelogd als <strong>{session.user?.name || session.user?.email}</strong>
+        <button
+          onClick={() => signOut()}
+          className="ml-4 px-3 py-1 text-sm bg-gray-700 text-white rounded hover:bg-gray-600"
+        >
+          Uitloggen
+        </button>
+      </div>
+
       {error && (
         <div className="max-w-4xl mx-auto mb-6 bg-red-500/10 border border-red-500 text-red-500 p-4 rounded-lg">
           <p className="font-semibold">Error loading balance:</p>
@@ -122,7 +147,7 @@ export default function Home() {
           )}
         </div>
       )}
-      
+
       <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-[#2B2F36] rounded-lg p-6">
           <div className="flex items-center justify-between mb-4">
