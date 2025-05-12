@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useSession, signIn, signOut } from "next-auth/react";
 import DashboardOverview from "./DashboardOverview";
 
+// Version marker for deploy trigger: v1.2
+
 interface BitvavoBalance {
   symbol: string;
   available: string;
