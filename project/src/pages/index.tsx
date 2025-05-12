@@ -1,6 +1,6 @@
-import { dynamic as forceDynamic } from './force-dynamic'; // <-- alias gebruiken om naamconflict te vermijden
-import dynamicImport from 'next/dynamic'; // <-- hernoem deze import om geen conflict te veroorzaken
+import dynamic from 'next/dynamic';
 
-const Home = dynamicImport(() => import('../components/index.client'), { ssr: false });
+// Voorkom SSR van de pagina zodat useSession() niet crasht bij build
+const Home = dynamic(() => import('../components/index.client'), { ssr: false });
 
 export default Home;
