@@ -38,17 +38,22 @@ export default function DashboardOverview({
           €{totalValue.toFixed(2)}
        </div>
         <div className="text-sm text-gray-400">
-  24h change: {change24h.toFixed(2)}%
+          24h change: {change24h.toFixed(2)}%
         </div>
-          <div className="text-gray-400 text-sm">
+        <div className="text-gray-400 text-sm">
           {assetCount} assets
         </div> 
       </div>
+
       {/* EUR Balance */}
       <div className="bg-[#2B2F36] rounded-lg p-6 shadow-md">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-gray-300 text-lg">EUR Balance</h2>
-          <RefreshCcw className="text-gray-400 cursor-pointer hover:text-gray-300" size={18} onClick={onRefresh} />
+          <RefreshCcw 
+            className="text-gray-400 cursor-pointer hover:text-gray-300" 
+            size={18} 
+            onClick={onRefresh} 
+          />
         </div>
         <div className="text-3xl font-bold text-blue-500 mb-2">
           €{eurBalance.toFixed(2)}
