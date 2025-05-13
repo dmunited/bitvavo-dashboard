@@ -1,4 +1,11 @@
-import React from 'react';
+import { RefreshCcw } from "lucide-react";
+
+interface Coin {
+  symbol: string;
+  available: number;
+  inOrders: number;
+  totalEurValue: number;
+}
 
 interface DashboardOverviewProps {
   totalValue: number;
@@ -6,15 +13,11 @@ interface DashboardOverviewProps {
   assetCount: number;
   eurBalance: number;
   eurInOrders: number;
-  coins: Array<{
-    symbol: string;
-    amount: number | string;
-    eurValue?: number | string;
-  }>;
+  coins: Coin[];
   onRefresh: () => void;
 }
 
-const DashboardOverview: React.FC<DashboardOverviewProps> = ({
+export default function DashboardOverview({
   totalValue,
   change24h,
   assetCount,
@@ -22,90 +25,70 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({
   eurInOrders,
   coins,
   onRefresh
-}) => {
+}: DashboardOverviewProps) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      {/* Responsive grid: 1 col on small screens, 2 cols on md+ */}
-      {/* New cards can be added easily by adding more <div> items below */}
-      {/* Portfolio Value Card */}
-      <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-        {/* Card title */}
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">
-          Portfolio Value
-        </h3>
-        {/* Main portfolio value */}
-        <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-          €{typeof totalValue === 'number' ? totalValue.toFixed(2) : totalValue}
-        </p>
-        {/* 24h change and asset count (labels and values) */}
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          24h Change:{" "}
-          <span className="font-medium text-gray-800 dark:text-gray-200">
-            {typeof change24h === 'number' ? change24h.toFixed(2) : change24h}% 
-          </span>
-        </p>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          Assets:{" "}
-          <span className="font-medium text-gray-800 dark:text-gray-200">
-            {assetCount}
-          </span>
-        </p>
-      </div>
-
-      {/* EUR Balance Card */}
-      <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-        {/* Card title with refresh action */}
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
-            EUR Balance
-          </h3>
-          {/* Refresh button to trigger balance update */}
-          <button 
-            onClick={onRefresh} 
-            className="text-sm text-blue-600 dark:text-blue-500 hover:underline"
-            aria-label="Refresh balance"
-          >
-            ↻
-          </button>
+    <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* Portfolio Value */}
+      <div className="bg-[#2B2F36] rounded-2xl p-6 shadow-md">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-gray-300 text-lg font-semibold">Portfolio Value</h2>
+          <span className="text-green-500 text-sm">↗</span>
         </div>
-        {/* Main EUR balance value */}
-        <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-          €{typeof eurBalance === 'number' ? eurBalance.toFixed(2) : eurBalance}
-        </p>
-        {/* EUR in orders as secondary info */}
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          In orders:{" "}
-          <span className="font-medium text-gray-800 dark:text-gray-200">
-            €{typeof eurInOrders === 'number' ? eurInOrders.toFixed(2) : eurInOrders}
-          </span>
-        </p>
-      </div>
-
-      {/* All Balances Card (coin list) */}
-      <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow md:col-span-2">
-        {/* Card title */}
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">
-          All Balances
-        </h3>
-        {/* Coin list with symbol, amount and value */}
-        <div className="divide-y divide-gray-200 dark:divide-gray-700">
-          {coins.map((coin, index) => (
-            <div key={coin.symbol + index} className="flex justify-between py-2 text-sm">
-              <span className="text-gray-800 dark:text-gray-200">{coin.symbol}</span>
-              <span className="text-gray-800 dark:text-gray-200">
-                {typeof coin.amount === 'number' ? coin.amount.toFixed(8) : coin.amount}{" "}
-                {coin.eurValue !== undefined && (
-                  <span className="text-gray-600 dark:text-gray-400">
-                    ({typeof coin.eurValue === 'number' ? coin.eurValue.toFixed(2) : coin.eurValue} €)
-                  </span>
-                )}
-              </span>
-            </div>
-          ))}
+        <div className="text-3xl font-bold text-green-500 mb-1">
+          €{totalValue.toFixed(2)}
+        </div>
+        <div className="text-sm text-gray-400">
+          24h change: {change24h.toFixed(2)}%
+        </div>
+        <div className="text-sm text-gray-400">
+          {assetCount} assets
         </div>
       </div>
+
+      {/* EUR Balance */}
+      <div className="bg-[#2B2F36] rounded-2xl p-6 shadow-md">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-gray-300 text-lg font-semibold">EUR Balance</h2>
+          <RefreshCcw
+            className="text-gray-400 cursor-pointer hover:text-gray-300"
+            size={18}
+            onClick={onRefresh}
+          />
+        </div>
+        <div className="text-3xl font-bold text-blue-500 mb-1">
+          €{eurBalance.toFixed(2)}
+        </div>
+        <div className="text-sm text-gray-400">
+          In orders: €{eurInOrders.toFixed(2)}
+        </div>
+      </div>
+
+      {/* All Balances */}
+      {coins.length > 0 && (
+        <div className="md:col-span-2 bg-[#2B2F36] rounded-2xl p-6 shadow-md">
+          <h2 className="text-gray-300 text-lg font-semibold mb-4">All Balances</h2>
+          <div className="grid gap-3">
+            {coins.map((coin) => (
+              <div
+                key={coin.symbol}
+                className="flex justify-between items-center border-b border-gray-700 pb-2 text-gray-300"
+              >
+                <div className="font-medium">{coin.symbol}</div>
+                <div className="text-right">
+                  <div>
+                    {coin.available.toFixed(8)} ({coin.totalEurValue.toFixed(2)} €)
+                  </div>
+                  {coin.inOrders > 0 && (
+                    <div className="text-sm text-gray-400">
+                      In orders: {coin.inOrders.toFixed(8)}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
-};
-
-export default DashboardOverview;
+}
