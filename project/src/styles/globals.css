@@ -4,6 +4,7 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Plaats alles binnen de base layer */
 @layer base {
   :root {
     --background: #ffffff;
